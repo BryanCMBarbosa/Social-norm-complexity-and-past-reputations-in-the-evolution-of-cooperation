@@ -141,16 +141,15 @@ class env():
         plt.show()
 
     def mutation(self, mut):
-        for index, i in enumerate(mut):
-            mut[index].strategy = np.random.randint(2, size=8)
+        for i in range(mut):
+            mut[i].strategy = np.random.randint(2, size=8)
         return mut
 
     def imitation(self, whole_population, imit):
         y_indiv = np.random.choice(whole_population, imit.shape[0], replace=False)
         indexes = np.arange(y_indiv.shape[0])
-        other_indiv = [np.random.choice(whole_population, 2*self.z, replace=True), np.random.choice(whole_population, 2*self.z, replace=True)]
 
-        imit = Parallel(n_jobs=4)(delayed(self.imit_operation)(x, y, other_indiv) for x, y in zip(imit, y_indiv))
+        imit = Parallel(n_jobs=1)(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
         return imit
 
         '''
@@ -171,12 +170,14 @@ class env():
         return imit
         '''
 
-    def imit_operation(self, x, y, other_indiv):
+    def imit_operation(self, x, y):
+        other_indiv_x = np.random.choice(self.individuals, 2*self.z, replace=True)
+        other_indiv_y = np.random.choice(self.individuals, 2*self.z, replace=True)
         i_x = x
         i_y = y
         i_x.reset()
         i_y.reset()
-        for o_i_x, o_i_y in other_indiv:
+        for o_i_x, o_i_y in zip(other_indiv_x, other_indiv_y):
             self.match(i_x, o_i_x)
             self.match(i_y, o_i_y)
 
