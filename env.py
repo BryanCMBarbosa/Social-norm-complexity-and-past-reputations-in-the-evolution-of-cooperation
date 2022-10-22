@@ -149,7 +149,7 @@ class env():
         y_indiv = np.random.choice(whole_population, imit.shape[0], replace=False)
         indexes = np.arange(y_indiv.shape[0])
 
-        imit = Parallel(n_jobs=1)(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
+        imit = Parallel(n_jobs=-1, backend='multiprocessing')(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
         return imit
 
         '''
@@ -184,8 +184,10 @@ class env():
         prob_imitation = 1 / (1 + np.exp(i_x.fitness - i_y.fitness))
         must_imit = np.random.choice([True, False], 1, p = [prob_imitation, 1-prob_imitation])[0]
         if must_imit:
+            print("He did it!")
             i_x.strategy = i_y.strategy
 
+        print
         return i_x
 
     def run_gens(self):
