@@ -141,7 +141,7 @@ class env():
         plt.show()
 
     def mutation(self, mut):
-        for i in range(mut):
+        for i in range(mut.shape[0]):
             mut[i].strategy = np.random.randint(2, size=8)
         return mut
 
