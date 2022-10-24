@@ -149,7 +149,8 @@ class env():
         y_indiv = np.random.choice(whole_population, imit.shape[0], replace=False)
         indexes = np.arange(y_indiv.shape[0])
 
-        imit = Parallel(n_jobs=-1, backend='multiprocessing')(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
+        imit = Parallel(n_jobs=-1, backend='threading')(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
+        
         return imit
 
         '''
@@ -183,11 +184,10 @@ class env():
 
         prob_imitation = 1 / (1 + np.exp(i_x.fitness - i_y.fitness))
         must_imit = np.random.choice([True, False], 1, p = [prob_imitation, 1-prob_imitation])[0]
+
         if must_imit:
-            print("He did it!")
             i_x.strategy = i_y.strategy
 
-        print
         return i_x
 
     def run_gens(self):
@@ -204,7 +204,7 @@ class env():
             mut_individuals = self.mutation(mut_individuals)
             imit_individuals = self.imitation(self.individuals, imit_individuals)
             self.individuals = np.concatenate([not_revising_strat_indiv, mut_individuals, imit_individuals])
-            
+             
             if g >= int(0.2*self.gen):
                 self.coops_per_generation = np.append(self.coops_per_generation, self.coops_in_g)
             self.coops_in_g = 0
@@ -242,5 +242,5 @@ class env():
 
 
 if __name__ == '__main__':
-    e = env(z = 20, norm = "Stern-judging", gen=60)
-    e.n_runs(3)
+    e = env(z = 16, norm = "Stern-judging", gen=20)
+    e.n_runs(1)
