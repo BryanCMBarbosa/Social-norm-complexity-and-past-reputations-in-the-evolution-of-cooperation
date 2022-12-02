@@ -1,23 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-#from joblib import Parallel, delayed
-from multiprocessing import Pool
-from multiprocessing import cpu_count
-from functools import partial
 import time
 
-class Individual():
-    
-    def __init__(self, id, strategy = np.array([]), payoffs = np.array([]), fitness = 0.0, reputation = np.random.randint(2, size=2)):
+class individual():
+    def __init__(self, id, strategy = np.array([])):
         self.id = id
         self.strategy = strategy
-        self.payoffs = payoffs
-        self.fitness = fitness
-        self.reputation = reputation
-
-    def __reduce__(self):
-        return (self.__class__, (self.id, self.strategy, self.payoffs, self.fitness, self.reputation))
+        self.payoffs = np.array([])
+        self.fitness = 0.0
+        self.reputation = np.random.randint(2, size=2)
 
     def act(self, repcomb_index, epsilon):
         can_execute = np.random.choice([False, True], 1, p = epsilon)[0]
@@ -82,7 +74,7 @@ class env():
     def create_agents(self):  
         for i in range(self.z):
             s = np.random.randint(2, size=8)
-            indiv = Individual(i, s)
+            indiv = individual(i, s)
             self.individuals = np.append(self.individuals, indiv)
 
     def bin_to_dec(self, bin_array):
@@ -92,15 +84,14 @@ class env():
         if donor_action != -1:
             return self.bin_to_dec(np.array([receptor.reputation[-2], donor.reputation[-1], receptor.reputation[-1], donor_action]))
         else:
-            gossip_error1 = np.random.choice([False, True], 1, p=self.chi)
-            gossip_error2 = np.random.choice([False, True], 1, p=self.chi)
+            gossip_error = np.random.choice([False, True], 2, p=self.chi, replace = True)
 
-            if gossip_error1:
+            if gossip_error[0]:
                 receptor_rep_1 = self.reverse_value(receptor.reputation[-1])
             else:
                 receptor_rep_1 = receptor.reputation[-1]
 
-            if gossip_error2:
+            if gossip_error[1]:
                 receptor_rep_2 = self.reverse_value(receptor.reputation[-2])
             else:
                 receptor_rep_2 = receptor.reputation[-2]
@@ -153,31 +144,11 @@ class env():
             mut[i].strategy = np.random.randint(2, size=8)
         return mut
 
-    '''    
     def imitation(self, whole_population, imit):
         y_indiv = np.random.choice(whole_population, imit.shape[0], replace=False)
-        #indexes = np.arange(y_indiv.shape[0])
-        imit = Parallel(n_jobs=-1)(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
-        #imit = Parallel(n_jobs=-1, backend='threading')(delayed(self.imit_operation)(x, y) for x, y in zip(imit, y_indiv))
-        
-        return imit
+        indexes = np.arange(y_indiv.shape[0])
 
-    '''
-    def imitation(self, whole_population, imit):
-        y = np.random.choice(whole_population, imit.shape[0], replace=False)
-        available_cpu = cpu_count()
-
-        x_list = np.array_split(imit, available_cpu)
-        y_list = np.array_split(y, available_cpu)
-        pool = Pool(available_cpu)
-        res = pool.starmap(self.imit_operation, zip(x_list, y_list))
-        pool.close()
-        pool.join()
-
-        return np.concatenate(res)
-
-    def imit_operation(self, x_list, y_list):
-        for x, y in zip(x_list, y_list):
+        for index, x, y in zip(indexes, imit, y_indiv):
             other_indiv_x = np.random.choice(self.individuals, 2*self.z, replace=True)
             other_indiv_y = np.random.choice(self.individuals, 2*self.z, replace=True)
             i_x = x
@@ -190,33 +161,10 @@ class env():
 
             prob_imitation = 1 / (1 + np.exp(i_x.fitness - i_y.fitness))
             must_imit = np.random.choice([True, False], 1, p = [prob_imitation, 1-prob_imitation])[0]
-
             if must_imit:
                 i_x.strategy = i_y.strategy
-                x = i_x
-
-        return x_list
-        
-    '''
-    def imit_operation(self, x, y):
-        other_indiv_x = np.random.choice(self.individuals, 2*self.z, replace=True)
-        other_indiv_y = np.random.choice(self.individuals, 2*self.z, replace=True)
-        i_x = x
-        i_y = y
-        i_x.reset()
-        i_y.reset()
-        for o_i_x, o_i_y in zip(other_indiv_x, other_indiv_y):
-            self.match(i_x, o_i_x)
-            self.match(i_y, o_i_y)
-
-        prob_imitation = 1 / (1 + np.exp(i_x.fitness - i_y.fitness))
-        must_imit = np.random.choice([True, False], 1, p = [prob_imitation, 1-prob_imitation])[0]
-
-        if must_imit:
-            i_x.strategy = i_y.strategy
-
-        return i_x
-    '''
+                imit[index] = i_x
+        return imit
 
     def run_gens(self):
         for g in range(self.gen):
