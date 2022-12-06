@@ -1,6 +1,6 @@
 #include "Simulation.h"
 
-Simulation::Simulation(bitset<16> norm, string norm_name, unsigned long z, unsigned long long generations = 1000, float payoff_b = 5, float payoff_c = 1, float epsilon = 0.01, float alpha = 0.01, float chi = 0.01) : mt((random_device())())
+Simulation::Simulation(bitset<16> norm, string norm_name, unsigned long z, unsigned long long generations, float payoff_b, float payoff_c, float epsilon, float alpha, float chi) : mt((random_device())())
 {
     this->norm = norm;
     this->norm_name = norm_name;
@@ -12,8 +12,10 @@ Simulation::Simulation(bitset<16> norm, string norm_name, unsigned long z, unsig
     this->epsilon = vector<float>{ epsilon, 1-epsilon };
     this->alpha = vector<float>{ alpha, 1-alpha };
     this->chi = vector<float>{ chi, 1-chi };
-    this->coops_in_gen = 0;
-    this->total_acts = 6*z*long(z*mi[1]);
+    this->coops = 0;
+    this->total_acts = 0;
+    this->keep_track = false;
+    create_agents();
 }
 
 void Simulation::create_agents()
@@ -22,7 +24,7 @@ void Simulation::create_agents()
        individuals.emplace_back(i);
 }
 
-short Simulation::repcomb_to_index(Individual donor, Individual receptor, bool donor_action = false, bool use_donor_action = false)
+short Simulation::repcomb_to_index(Individual donor, Individual receptor, bool donor_action, bool use_donor_action)
 {
     if (use_donor_action)
         return (8 * receptor.reputation[receptor.reputation.size()-2]) + (4 * donor.reputation[donor.reputation.size()-1]) + (2 * receptor.reputation[receptor.reputation.size()-1]) + (1 * donor_action);
@@ -31,14 +33,14 @@ short Simulation::repcomb_to_index(Individual donor, Individual receptor, bool d
         //random_device rd;
         //mt19937 mt(rd());
         bernoulli_distribution dist(chi[0]);
-        vector<bool> gossip_error(2);
-        for(int i=0; i<gossip_error.size(); i++)
-            gossip_error.push_back(dist(mt));
+        bitset<2> gossip_error;
+        for(short i=0; i<gossip_error.size(); i++)
+            gossip_error[i] = dist(mt);
 
         bool receptor_rep_1 = gossip_error[0] ? !receptor.reputation[receptor.reputation.size()-1] : receptor.reputation[receptor.reputation.size()-1];
         bool receptor_rep_2 = gossip_error[1] ? !receptor.reputation[receptor.reputation.size()-2] : receptor.reputation[receptor.reputation.size()-2];
 
-        return 4 * receptor_rep_2 + 2 * donor.reputation[donor.reputation.size()-1] + 1 * receptor_rep_1;
+        return (4 * receptor_rep_2) + (2 * donor.reputation[donor.reputation.size()-1]) + (1 * receptor_rep_1);
     }
 }
 
@@ -47,9 +49,9 @@ void Simulation::judge(Individual x, Individual y, bool x_action, bool y_action)
     //random_device rd;
     //mt19937 mt(rd());
     bernoulli_distribution dist(alpha[0]);
-    vector<bool> can_assign(2);
-    for(int i=0; i<can_assign.size(); i++)
-        can_assign.push_back(dist(mt));
+    bitset<2> can_assign;
+    for(short i=0; i<can_assign.size(); i++)
+        can_assign[i] = dist(mt);
     
     if (can_assign[0])
         x.reputation.push_back(norm[repcomb_to_index(x, y, x_action, true)]);
@@ -59,24 +61,25 @@ void Simulation::judge(Individual x, Individual y, bool x_action, bool y_action)
     if (can_assign[1])
         y.reputation.push_back(norm[repcomb_to_index(y, x, y_action, true)]);
     else
-        x.reputation.push_back(norm[!repcomb_to_index(y, x, y_action, true)]);
+        y.reputation.push_back(norm[!repcomb_to_index(y, x, y_action, true)]);
 }
 
 void Simulation::match(Individual x, Individual y)
 {
-    bool x_act = x.act(repcomb_to_index(x, y), epsilon = epsilon);
-    bool y_act = y.act(repcomb_to_index(y, x), epsilon = epsilon);
+    bool x_act = x.act(repcomb_to_index(x, y), epsilon);
+    bool y_act = y.act(repcomb_to_index(y, x), epsilon);
+    total_acts += keep_track * 2;
 
     if (x_act)
     {
-        coops_in_gen++;
+        coops += keep_track * 1;
         x.payoffs.push_back(-payoff_c);
         y.payoffs.push_back(payoff_b);
     }
         
     if (y_act)
     {
-        coops_in_gen++;
+        coops += keep_track * 1;
         y.payoffs.push_back(-payoff_c);
         x.payoffs.push_back(payoff_b);
     }
@@ -90,25 +93,39 @@ void Simulation::mutation(vector<Individual>& mut)
         mut[i].generate_strategy();
 }
 
+vector<Individual> Simulation::sample_with_reposition(vector<Individual>& vec, unsigned long long sample_size)
+{
+    vector<Individual> sample;
+    uniform_int_distribution<> dist(0, vec.size()-1);
+    for (unsigned long long i = 0; i < sample_size; i++)
+    {
+        unsigned long long index = dist(mt);
+        sample.push_back(vec[index]);
+    }
+
+    return sample;
+}
+
 void Simulation::imitation(vector <Individual>& imit)
 {
     vector<Individual> y_individuals;
-    sample(individuals.begin(), individuals.end(), back_inserter(y_individuals), imit.size(), mt);
+    y_individuals = sample_with_reposition(individuals, imit.size());
 
     for (unsigned long i = 0; i < imit.size(); i++)
     {
         vector<Individual> adversaries_x;
         vector<Individual> adversaries_y;
 
-        sample(individuals.begin(), individuals.end(), back_inserter(adversaries_x), 2*z, mt);
-        sample(individuals.begin(), individuals.end(), back_inserter(adversaries_y), 2*z, mt);
+        adversaries_x = sample_with_reposition(individuals, 2*z);
+        adversaries_y = sample_with_reposition(individuals, 2*z);
 
         Individual x_i = imit[i];
         Individual y_i = y_individuals[i];
+
         x_i.reset();
         y_i.reset();
 
-        for(unsigned long j; j < 2*z; j++)
+        for(unsigned long j = 0; j < 2*z; j++)
         {
             match(x_i, adversaries_x[j]);
             match(y_i, adversaries_y[j]);
@@ -130,8 +147,8 @@ vector<vector<Individual>> Simulation::divide_mutation_imitation()
     vector<Individual> imitation_group;
     vector<vector<Individual>> groups;
     
-    bernoulli_distribution dist(mi[0]);
-    bool decision_var;
+    uniform_real_distribution<> dist(0, 1.0);
+    double decision_var;
 
     for(unsigned long long i = 0; i < z; i++)
     {
@@ -149,26 +166,41 @@ vector<vector<Individual>> Simulation::divide_mutation_imitation()
     return groups;
 }
 
-void Simulation::run_generations()
+vector<double> Simulation::run_generations()
 {
     vector<vector<Individual>> groups;
+    vector<double> eta_each_gen;
+    double eta;
 
     for(unsigned long long i = 0; i < generations; i++)
     {
+        keep_track = i > 0.2*generations;
+
         groups = divide_mutation_imitation();
+
         mutation(groups[0]);
         imitation(groups[1]);
 
         individuals.clear();
+        
         individuals.reserve(groups[0].size()+groups[1].size());
         individuals.insert(individuals.end(), groups[0].begin(), groups[0].end());
         individuals.insert(individuals.end(), groups[1].begin(), groups[1].end());
         shuffle(individuals.begin(), individuals.end(), mt);
 
-        coops_per_gen.push_back(coops_in_gen);
-        coops_in_gen = 0;
         groups.clear();
+
+        if (keep_track)
+        {
+            eta = double(coops) / double(total_acts);
+            eta_each_gen.push_back(eta);
+        }
+
+        coops = 0;
+        total_acts = 0;
     }
+
+    return eta_each_gen;
 }
 
 void Simulation::run_n_runs(unsigned long long runs)
@@ -176,20 +208,15 @@ void Simulation::run_n_runs(unsigned long long runs)
     vector<double> eta_each_gen;
     vector<vector<double>> eta_each_run;
 
-    double total_acts_inverse = 1/total_acts;
-    
     for(unsigned long long i = 0; i < runs; i++)
     {
-        run_generations();
-        transform(coops_per_gen.begin(), coops_per_gen.end(), eta_each_gen.begin(), [total_acts_inverse](double val) {return val * total_acts_inverse;});
+        eta_each_gen = run_generations();
         eta_each_run.push_back(eta_each_gen);
 
-        coops_per_gen.clear();
-        eta_each_gen.clear();
-        //clear_agents();
         individuals.clear();
         create_agents();
-        cout << "Run " << i+1 << "finished." << endl;
+
+        cout << "Run " << i+1 << " finished." << endl;
     }
 
     turn_to_csv(runs, eta_each_run);
@@ -202,14 +229,20 @@ void Simulation::turn_to_csv(unsigned long long runs, vector<vector<double>> eta
     csv_file.open(file_name, ios::out | ios::app);
 
     for(unsigned long long i = 0; i < runs; i++)
-        csv_file << "run_" << i+1 << ",";
+    {
+        csv_file << "run_" << i+1;
+        if (!(i == runs-1))
+            csv_file << ",";
+    }
     csv_file << "\n";
 
-    for(unsigned long long i = 0; i < generations; i++)
+    for(unsigned long long i = 0; i < eta_each_run[0].size(); i++)
     {
         for(unsigned long long j = 0; j < runs; j++)
         {
-            csv_file << "run_" << eta_each_run[j][i] << ",";
+            csv_file << eta_each_run[j][i];
+            if (!(j == runs-1))
+                csv_file << ",";
         }
         csv_file << "\n";
     }

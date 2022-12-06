@@ -6,7 +6,8 @@
 #include <boost/dynamic_bitset.hpp>
 #include <vector>
 #include <numeric>
-#include <algorithm>
+#include <random>
+//#include <algorithm>
 
 #define strategy_length 8
 
@@ -29,6 +30,7 @@ class Individual
         dynamic_bitset<> reputation;
 
     private:
+        mt19937 mt;
         bool reverse_act(bool action);
         float average(vector<float> const& vec);
         void generate_reputation();

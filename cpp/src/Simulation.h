@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <bitset>
+#include <boost/dynamic_bitset.hpp>
 #include <random>
 #include <math.h>
 #include <fstream>
@@ -23,7 +24,7 @@ class Simulation
         void mutation(vector<Individual>& mut);
         void imitation(vector <Individual>& imit);
         vector<vector<Individual>> divide_mutation_imitation();
-        void run_generations();
+        vector<double> run_generations();
         void run_n_runs(unsigned long long runs);
         void clear_agents();
         void turn_to_csv(unsigned long long runs, vector<vector<double>> eta_each_run);
@@ -40,11 +41,12 @@ class Simulation
         vector<float> alpha;
         vector<float> chi;
         vector<float> eta;
-        long coops_in_gen;
-        vector<long> coops_per_gen;
-        unsigned long total_acts;
+        unsigned long long coops;
+        unsigned long long total_acts;
+        bool keep_track;
 
     private:
+        vector<Individual> sample_with_reposition(vector<Individual>& vec, unsigned long long sample_size);
         mt19937 mt;
 };
 
