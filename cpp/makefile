@@ -6,5 +6,8 @@ clean:
 	rm -f main
 	@echo "Done."
 
+clean_csv:
+	rm -f *.csv
+
 exec:
 	./main
