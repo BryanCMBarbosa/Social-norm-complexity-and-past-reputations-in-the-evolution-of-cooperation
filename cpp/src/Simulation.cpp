@@ -174,19 +174,24 @@ vector<double> Simulation::run_generations()
 
     for(unsigned long long i = 0; i < generations; i++)
     {
+        cout << "Gen. " << i+1 << " of " << generations << " started." << endl;
+
         keep_track = i > 0.2*generations;
 
         groups = divide_mutation_imitation();
 
         mutation(groups[0]);
+        cout << "Mutation done!" << endl;
+
         imitation(groups[1]);
+        cout << "Imitation done!" << endl;
 
         individuals.clear();
         
         individuals.reserve(groups[0].size()+groups[1].size());
         individuals.insert(individuals.end(), groups[0].begin(), groups[0].end());
         individuals.insert(individuals.end(), groups[1].begin(), groups[1].end());
-        shuffle(individuals.begin(), individuals.end(), mt);
+        //shuffle(individuals.begin(), individuals.end(), mt);
 
         groups.clear();
 
@@ -198,6 +203,7 @@ vector<double> Simulation::run_generations()
 
         coops = 0;
         total_acts = 0;
+        cout << "Gen. " << i+1 << " of " << generations << " finished." << endl << endl;
     }
 
     return eta_each_gen;
@@ -210,6 +216,8 @@ void Simulation::run_n_runs(unsigned long long runs)
 
     for(unsigned long long i = 0; i < runs; i++)
     {
+        cout << endl << endl << endl << endl << "Run " << i+1 << " started." << endl;
+
         eta_each_gen = run_generations();
         eta_each_run.push_back(eta_each_gen);
 
@@ -219,7 +227,9 @@ void Simulation::run_n_runs(unsigned long long runs)
         cout << "Run " << i+1 << " finished." << endl;
     }
 
+    cout << "Turning to CSV..." << endl;
     turn_to_csv(runs, eta_each_run);
+    cout << "Done!" << endl;
 }
 
 void Simulation::turn_to_csv(unsigned long long runs, vector<vector<double>> eta_each_run)
