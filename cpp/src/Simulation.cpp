@@ -110,34 +110,37 @@ void Simulation::imitation(vector <Individual>& imit)
 {
     vector<Individual> y_individuals;
     y_individuals = sample_with_reposition(individuals, imit.size());
-
-    for (unsigned long i = 0; i < imit.size(); i++)
+    
+    #pragma omp parallel                   
     {
-        vector<Individual> adversaries_x;
-        vector<Individual> adversaries_y;
-
-        adversaries_x = sample_with_reposition(individuals, 2*z);
-        adversaries_y = sample_with_reposition(individuals, 2*z);
-
-        Individual x_i = imit[i];
-        Individual y_i = y_individuals[i];
-
-        x_i.reset();
-        y_i.reset();
-
-        for(unsigned long j = 0; j < 2*z; j++)
+        for (unsigned long i = 0; i < imit.size(); i++)
         {
-            match(x_i, adversaries_x[j]);
-            match(y_i, adversaries_y[j]);
-        }
+            vector<Individual> adversaries_x;
+            vector<Individual> adversaries_y;
 
-        double prob_imitation = 1 / (1 + exp(x_i.fitness - y_i.fitness));
+            adversaries_x = sample_with_reposition(individuals, 2*z);
+            adversaries_y = sample_with_reposition(individuals, 2*z);
+
+            Individual x_i = imit[i];
+            Individual y_i = y_individuals[i];
+
+            x_i.reset();
+            y_i.reset();
+
+            for(unsigned long j = 0; j < 2*z; j++)
+            {
+                match(x_i, adversaries_x[j]);
+                match(y_i, adversaries_y[j]);
+            }
+
+            double prob_imitation = 1 / (1 + exp(x_i.fitness - y_i.fitness));
         
-        bernoulli_distribution dist(prob_imitation);
-        bool must_imit = dist(mt);
+            bernoulli_distribution dist(prob_imitation);
+            bool must_imit = dist(mt);
         
-        if (must_imit)
-            imit[i].strategy = y_i.strategy;
+            if (must_imit)
+                imit[i].strategy = y_i.strategy;
+        }
     }
 }
 

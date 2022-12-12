@@ -8,6 +8,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <random>
 #include <math.h>
+#include <omp.h>
 #include <fstream>
 #include "Individual.h"
 
