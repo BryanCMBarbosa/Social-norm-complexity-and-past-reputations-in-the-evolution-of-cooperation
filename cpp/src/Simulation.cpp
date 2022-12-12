@@ -111,8 +111,9 @@ void Simulation::imitation(vector <Individual>& imit)
     vector<Individual> y_individuals;
     y_individuals = sample_with_reposition(individuals, imit.size());
     
-    #pragma omp parallel                   
+    #pragma omp parallel num_threads(8)                 
     {
+        #pragma omp for
         for (unsigned long i = 0; i < imit.size(); i++)
         {
             vector<Individual> adversaries_x;

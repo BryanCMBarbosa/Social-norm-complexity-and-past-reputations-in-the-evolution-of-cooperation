@@ -3,6 +3,7 @@
     "files.associations": {
         "random": "cpp",
         "vector": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "chrono": "cpp"
     }
 }
