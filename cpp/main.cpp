@@ -2,15 +2,14 @@
 #include "src/Simulation.h"
 #include <bitset>
 #include <stdlib.h>
+#include <chrono>
 #include <iostream>
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
-    clock_t start, end;
-    
-    start = clock();
+    auto t1 = chrono::high_resolution_clock::now();
 
     if (argc == 6)
     {
@@ -71,12 +70,11 @@ int main(int argc, char** argv)
     else
         cout << "Not enough arguments were passed." << endl;
 
-    end = clock();
-     // Calculating total time taken by the program.
-    double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
-    cout << "Time elapsed: " << fixed 
-         << time_taken;
-    cout << " sec " << endl;
+    auto t2 = chrono::high_resolution_clock::now();
 
+    std::cout << "Time: "
+              << chrono::duration_cast<chrono::milliseconds>(t2-t1).count()
+              << " milliseconds\n";
+              
     return 0;
 }
