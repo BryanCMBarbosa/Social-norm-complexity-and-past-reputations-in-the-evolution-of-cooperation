@@ -8,6 +8,10 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+    clock_t start, end;
+    
+    start = clock();
+
     if (argc == 6)
     {
         string argv_1(argv[1]);
@@ -66,6 +70,13 @@ int main(int argc, char** argv)
     }
     else
         cout << "Not enough arguments were passed." << endl;
+
+    end = clock();
+     // Calculating total time taken by the program.
+    double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
+    cout << "Time elapsed: " << fixed 
+         << time_taken;
+    cout << " sec " << endl;
 
     return 0;
 }
