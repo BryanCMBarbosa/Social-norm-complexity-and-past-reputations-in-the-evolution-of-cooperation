@@ -45,6 +45,7 @@ class Simulation
         unsigned long long coops;
         unsigned long long total_acts;
         bool keep_track;
+        int available_threads;
 
     private:
         vector<Individual> sample_with_reposition(vector<Individual>& vec, unsigned long long sample_size);

@@ -16,6 +16,8 @@ Simulation::Simulation(bitset<16> norm, string norm_name, unsigned long z, unsig
     this->total_acts = 0;
     this->keep_track = false;
     create_agents();
+    this->available_threads = omp_get_num_procs();
+    cout << available_threads << " available threads." << endl;
 }
 
 void Simulation::create_agents()
@@ -111,7 +113,8 @@ void Simulation::imitation(vector <Individual>& imit)
     vector<Individual> y_individuals;
     y_individuals = sample_with_reposition(individuals, imit.size());
     
-    #pragma omp parallel num_threads(8)                 
+    omp_set_num_threads(available_threads);
+    #pragma omp parallel              
     {
         #pragma omp for
         for (unsigned long i = 0; i < imit.size(); i++)
