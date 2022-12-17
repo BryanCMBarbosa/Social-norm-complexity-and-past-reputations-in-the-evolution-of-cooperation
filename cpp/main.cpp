@@ -14,6 +14,7 @@ int main(int argc, char** argv)
     if (argc == 6)
     {
         string argv_1(argv[1]);
+        reverse(argv_1.begin(), argv_1.end());
         bitset<16> norm(argv_1);
 
         string norm_name(argv[2]);
@@ -33,6 +34,7 @@ int main(int argc, char** argv)
     else if (argc > 6)
     {
         string argv_1(argv[1]);
+        reverse(argv_1.begin(), argv_1.end());
         bitset<16> norm(argv_1);
         
         string norm_name(argv[2]);
@@ -74,7 +76,7 @@ int main(int argc, char** argv)
 
     std::cout << "Time: "
               << chrono::duration_cast<chrono::milliseconds>(t2-t1).count()
-              << " milliseconds\n";
+              << " milliseconds." << endl;
               
     return 0;
 }

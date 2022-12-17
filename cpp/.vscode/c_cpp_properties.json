@@ -4,7 +4,9 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/homebrew/opt/boost/**"
+                "/opt/homebrew/opt/boost/**",
+                "/opt/homebrew/opt/open-mpi/**",
+                "/opt/homebrew/opt/libomp/include/**"
             ],
             "defines": [],
             "macFrameworkPath": [

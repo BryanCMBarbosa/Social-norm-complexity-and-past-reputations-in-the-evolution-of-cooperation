@@ -7,7 +7,6 @@
 #include <vector>
 #include <numeric>
 #include <random>
-//#include <algorithm>
 
 #define strategy_length 8
 
@@ -19,19 +18,17 @@ class Individual
     public:
         Individual(unsigned long id);
         short act(short repcomb_index, vector<float> epsilon);
-        void add_payoff(float payoff);
+        float get_fitness();
         void generate_strategy();
-        void reset();
+        void reset_payoff();
 
         unsigned long id;
         bitset<strategy_length> strategy;
         vector<float> payoffs;
-        float fitness;
         dynamic_bitset<> reputation;
 
     private:
         mt19937 mt;
-        bool reverse_act(bool action);
         float average(vector<float> const& vec);
         void generate_reputation();
 };
