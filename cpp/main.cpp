@@ -77,6 +77,6 @@ int main(int argc, char** argv)
     std::cout << "Time: "
               << chrono::duration_cast<chrono::milliseconds>(t2-t1).count()
               << " milliseconds." << endl;
-
+              
     return 0;
 }
