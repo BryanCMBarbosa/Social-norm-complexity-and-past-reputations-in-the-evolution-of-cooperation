@@ -1,9 +1,0 @@
-{
-    "workbench.colorTheme": "Dracula",
-    "files.associations": {
-        "random": "cpp",
-        "vector": "cpp",
-        "ios": "cpp",
-        "chrono": "cpp"
-    }
-}
