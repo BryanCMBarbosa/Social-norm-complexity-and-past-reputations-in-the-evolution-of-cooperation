@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <bitset>
-#include <boost/dynamic_bitset.hpp>
 #include <vector>
 #include <numeric>
 #include <random>
@@ -11,7 +10,6 @@
 #define strategy_length 8
 
 using namespace std;
-using namespace boost;
 
 class Individual
 {
@@ -25,7 +23,7 @@ class Individual
         unsigned long id;
         bitset<strategy_length> strategy;
         vector<float> payoffs;
-        dynamic_bitset<> reputation;
+        vector<bool> reputation;
 
     private:
         mt19937 mt;

@@ -16,8 +16,6 @@ Simulation::Simulation(bitset<16> norm, string norm_name, unsigned long z, unsig
     this->total_acts = 0;
     this->keep_track = false;
     create_agents();
-    this->available_threads = omp_get_num_procs();
-    cout << available_threads << " available threads." << endl;
 }
 
 void Simulation::create_agents()
@@ -119,41 +117,36 @@ void Simulation::imitation(vector <Individual>& imit)
     vector<Individual> y_individuals;
     y_individuals = sample_with_reposition(individuals, imit.size());
     
-    omp_set_num_threads(available_threads);
-    #pragma omp parallel              
+    for (unsigned long i = 0; i < imit.size(); i++)
     {
-        #pragma omp for
-        for (unsigned long i = 0; i < imit.size(); i++)
-        {
-            while(imit[i].id == y_individuals[i].id)
-                y_individuals[i] = sample_with_reposition(individuals, 1)[0];
+        while(imit[i].id == y_individuals[i].id)
+            y_individuals[i] = sample_with_reposition(individuals, 1)[0];
                 
-            vector<Individual> adversaries_x;
-            vector<Individual> adversaries_y;
+        vector<Individual> adversaries_x;
+        vector<Individual> adversaries_y;
 
-            adversaries_x = sample_with_reposition(individuals, 2*z);
-            adversaries_y = sample_with_reposition(individuals, 2*z);
+        adversaries_x = sample_with_reposition(individuals, 2*z);
+        adversaries_y = sample_with_reposition(individuals, 2*z);
 
-            Individual x_i = imit[i];
-            Individual y_i = y_individuals[i];
+        Individual x_i = imit[i];
+        Individual y_i = y_individuals[i];
 
-            x_i.reset_payoff();
-            y_i.reset_payoff();
+        x_i.reset_payoff();
+        y_i.reset_payoff();
 
-            for(unsigned long j = 0; j < 2*z; j++)
-            {
-                match(x_i, adversaries_x[j]);
-                match(y_i, adversaries_y[j]);
-            }
-
-            double prob_imitation = 1 / (1 + exp(x_i.get_fitness() - y_i.get_fitness()));
-        
-            bernoulli_distribution dist(prob_imitation);
-            bool must_imit = dist(mt);
-        
-            if (must_imit)
-                imit[i].strategy = y_i.strategy;
+        for(unsigned long j = 0; j < 2*z; j++)
+        {
+            match(x_i, adversaries_x[j]);
+            match(y_i, adversaries_y[j]);
         }
+
+        double prob_imitation = 1 / (1 + exp(x_i.get_fitness() - y_i.get_fitness()));
+        
+        bernoulli_distribution dist(prob_imitation);
+        bool must_imit = dist(mt);
+        
+        if (must_imit)
+            imit[i].strategy = y_i.strategy;
     }
 }
 

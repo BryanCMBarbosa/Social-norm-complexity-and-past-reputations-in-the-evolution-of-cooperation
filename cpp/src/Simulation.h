@@ -5,11 +5,9 @@
 #include <vector>
 #include <string>
 #include <bitset>
-#include <boost/dynamic_bitset.hpp>
 #include <random>
 #include <ctime> 
 #include <math.h>
-#include <omp.h>
 #include <fstream>
 #include "Individual.h"
 
