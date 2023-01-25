@@ -5,6 +5,8 @@ Individual::Individual(unsigned long id) : mt((random_device())())
     this->id = id;
     generate_strategy();
     generate_reputation();
+    fitness = 0.0;
+    payoffs_size = 0;
 }
 
 short Individual::act(short repcomb_index, vector<float> epsilon)
@@ -54,8 +56,8 @@ void Individual::add_payoff(double value)
     {
         double a, b;
         payoffs_size++;
-        a = 1 / payoffs_size;
-        b = 1 - a;
+        a = 1.0 / (double)payoffs_size;
+        b = 1.0 - a;
         fitness = (a*value) + (b*fitness);
     }
     else

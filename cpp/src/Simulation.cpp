@@ -153,7 +153,7 @@ void Simulation::imitation(vector <unsigned long long>& indexes)
             match(y_i, individuals[get_sampled_individual(individuals, y_i.id)]);
         }
 
-        double prob_imitation = 1 / (1 + exp(x_i.get_fitness() - y_i.get_fitness()));
+        double prob_imitation = 1 / (1 + exp(x_i.fitness - y_i.fitness));
 
         bernoulli_distribution dist(prob_imitation);
         bool must_imit = dist(mt);
@@ -239,7 +239,7 @@ void Simulation::run_n_runs(unsigned long long runs)
 
         individuals.clear();
         create_agents();
-
+        
         cout << "Run " << i+1 << " finished." << endl;
         cout << "::::::::::::::::::::::::::::::::::::::::::" << endl;
     }
