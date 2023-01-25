@@ -20,17 +20,7 @@ short Individual::act(short repcomb_index, vector<float> epsilon)
 
 float Individual::get_fitness()
 {
-    return average(payoffs);
-}
-
-float Individual::average(vector<float> const& vec)
-{
-    if(vec.empty())
-        return 0;
-
-    auto const count = static_cast<float>(vec.size());
-
-    return reduce(vec.begin(), vec.end()) / count;
+    return fitness;
 }
 
 void Individual::generate_strategy()
@@ -44,18 +34,33 @@ void Individual::generate_strategy()
 
 void Individual::generate_reputation()
 {
-    reputation.clear();
-    reputation.resize(2);
+    while (!reputation.empty())
+        reputation.pop();
 
     bernoulli_distribution dist(0.5);
-    for(int i = 0; i < reputation.size(); i++)
-    {
-        reputation[i] = dist(mt);
-    }
-        
+    for(int i = 0; i < 2; i++)
+        reputation.push(dist(mt));
 }
 
 void Individual::reset_payoff()
 {
-    payoffs.clear();
+    fitness = 0.0;
+    payoffs_size = 0;
+}
+
+void Individual::add_payoff(double value)
+{
+    if (payoffs_size > 0)
+    {
+        double a, b;
+        payoffs_size++;
+        a = 1 / payoffs_size;
+        b = 1 - a;
+        fitness = (a*value) + (b*fitness);
+    }
+    else
+    {
+        fitness = value;
+        payoffs_size++;
+    }
 }
