@@ -9,7 +9,6 @@
 #include <ctime> 
 #include <math.h>
 #include <fstream>
-#include <chrono>
 #include "Individual.h"
 
 using namespace std;

@@ -37,12 +37,3 @@ for s in scripts:
     file.write(f"sbatch --array={population_inf}-{population_sup}:10 {s}")
     file.write('\n')
 file.close()
-
-
-
-
-
-
-
-
-
