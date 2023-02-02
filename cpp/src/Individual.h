@@ -17,14 +17,14 @@ class Individual
     public:
         Individual(unsigned long id);
         short act(short repcomb_index, vector<float> epsilon);
-        float get_fitness();
+        float get_fitness(unsigned long z);
         void generate_strategy();
         void reset_payoff();
         void add_payoff(double value);
 
         unsigned long id;
         bitset<strategy_length> strategy;
-        unsigned long long payoffs_size;
+        double payoffs_sum;
         double fitness;
         queue<bool> reputation;
 

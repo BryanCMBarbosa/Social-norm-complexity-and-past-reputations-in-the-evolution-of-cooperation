@@ -75,22 +75,12 @@ void Simulation::match(Individual& x, Individual& y)
         x.add_payoff(-payoff_c);
         y.add_payoff(payoff_b);
     }
-    else
-    {
-        x.add_payoff(0.0);
-        y.add_payoff(0.0);
-    }
         
     if (y_act)
     {
         coops += keep_track * 1;
         y.add_payoff(-payoff_c);
         x.add_payoff(payoff_b);
-    }
-    else
-    {
-        y.add_payoff(0.0);
-        x.add_payoff(0.0);
     }
 
     judge(x, y, x_act, y_act);
@@ -153,7 +143,7 @@ void Simulation::imitation(vector <unsigned long long>& indexes)
             match(y_i, individuals[get_sampled_individual(individuals, y_i.id)]);
         }
 
-        double prob_imitation = 1 / (1 + exp(x_i.fitness - y_i.fitness));
+        double prob_imitation = 1 / (1 + exp(x_i.get_fitness(z) - y_i.get_fitness(z)));
 
         bernoulli_distribution dist(prob_imitation);
         bool must_imit = dist(mt);

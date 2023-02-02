@@ -6,7 +6,7 @@ Individual::Individual(unsigned long id) : mt((random_device())())
     generate_strategy();
     generate_reputation();
     fitness = 0.0;
-    payoffs_size = 0;
+    payoffs_sum = 0.0;
 }
 
 short Individual::act(short repcomb_index, vector<float> epsilon)
@@ -20,9 +20,9 @@ short Individual::act(short repcomb_index, vector<float> epsilon)
         return !strategy[repcomb_index];
 }
 
-float Individual::get_fitness()
+float Individual::get_fitness(unsigned long z)
 {
-    return fitness;
+    return payoffs_sum / (double)(2*z);
 }
 
 void Individual::generate_strategy()
@@ -47,22 +47,10 @@ void Individual::generate_reputation()
 void Individual::reset_payoff()
 {
     fitness = 0.0;
-    payoffs_size = 0;
+    payoffs_sum = 0.0;
 }
 
 void Individual::add_payoff(double value)
 {
-    if (payoffs_size > 0)
-    {
-        double a, b;
-        payoffs_size++;
-        a = 1.0 / (double)payoffs_size;
-        b = 1.0 - a;
-        fitness = (a*value) + (b*fitness);
-    }
-    else
-    {
-        fitness = value;
-        payoffs_size++;
-    }
+    payoffs_sum += value;
 }
