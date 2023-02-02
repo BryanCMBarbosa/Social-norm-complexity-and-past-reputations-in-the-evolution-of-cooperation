@@ -186,18 +186,13 @@ vector<double> Simulation::run_generations(unsigned long long run, unsigned long
 
     for(unsigned long long i = 0; i < generations; i++)
     {
-        cout << "Run " << run+1 << " of " << runs << endl;
-        cout << "Gen. " << i+1 << " of " << generations << " started." << endl;
-    
         keep_track = i > 0.2*generations;
 
         groups = divide_mutation_imitation();
 
         mutation(groups[0]);
-        cout << "Mutation done!" << endl;
 
         imitation(groups[1]);
-        cout << "Imitation done!" << endl;
 
         groups.clear();
 
@@ -209,7 +204,6 @@ vector<double> Simulation::run_generations(unsigned long long run, unsigned long
 
         coops = 0;
         total_acts = 0;
-        cout << "Gen. " << i+1 << " of " << generations << " finished." << endl << endl;
     }
 
     return eta_each_gen;
