@@ -10,7 +10,7 @@ clear_csv:
 	rm -f *.csv
 
 bash:
-	python bash_file_generator.py 20 120 100000 50
+	python3 bash_file_generator.py 20 120 100000 50
 
 clear_bash:
 	rm -f *.sh

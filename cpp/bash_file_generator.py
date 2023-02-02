@@ -34,6 +34,6 @@ file = open("a_script_to_rule_them_all.sh", "w")
 file.write("#!/bin/bash")
 file.write('\n')
 for s in scripts:
-    file.write(f"sbatch --array={population_inf}-{population_sup}:10 {s}")
+    file.write(f"sbatch --time=28-0 --array={population_inf}-{population_sup}:10 {s}")
     file.write('\n')
 file.close()
