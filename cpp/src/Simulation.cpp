@@ -15,6 +15,8 @@ Simulation::Simulation(bitset<16> norm, string norm_name, unsigned long z, unsig
     this->coops = 0;
     this->total_acts = 0;
     this->keep_track = false;
+    this->available_threads = omp_get_num_procs();
+    omp_set_num_threads(available_threads);
     create_agents();
 }
 
@@ -128,29 +130,43 @@ void Simulation::imitation(vector <unsigned long long>& indexes)
 {
     vector<Individual> y_individuals;
     y_individuals = sample_with_reposition(individuals, indexes.size());
+    map<unsigned long, bitset<strategy_length>> imit_index_and_strat;
+    int size = indexes.size();
 
-    for (unsigned long long i = 0; i < indexes.size(); i++)
-    {
-        Individual x_i = individuals[indexes[i]];
-        Individual y_i = y_individuals[i];
-            
-        x_i.reset_payoff();
-        y_i.reset_payoff();
-
-        for(unsigned long j = 0; j < 2*z; j++)
+    #pragma omp parallel private(individuals, indexes)
+    { 
+        #pragma omp for
+        for (unsigned long long i = 0; i < size; i++)
         {
-            match(x_i, individuals[get_sampled_individual(individuals, x_i.id)]);
-            match(y_i, individuals[get_sampled_individual(individuals, y_i.id)]);
-        }
+            Individual x_i = individuals[indexes[i]];
+            Individual y_i = y_individuals[i];
 
-        double prob_imitation = 1 / (1 + exp(x_i.get_fitness(z) - y_i.get_fitness(z)));
+            x_i.reset_payoff();
+            y_i.reset_payoff();
 
-        bernoulli_distribution dist(prob_imitation);
-        bool must_imit = dist(mt);
+            for(unsigned long j = 0; j < 2*z; j++)
+            {
+                match(x_i, individuals[get_sampled_individual(individuals, x_i.id)]);
+                match(y_i, individuals[get_sampled_individual(individuals, y_i.id)]);
+            }
+
+            double prob_imitation = 1 / (1 + exp(x_i.get_fitness(z) - y_i.get_fitness(z)));
+
+            bernoulli_distribution dist(prob_imitation);
+            bool must_imit = dist(mt);
         
-        if (must_imit)
-            individuals[indexes[i]].strategy = y_i.strategy;
+            if (must_imit)
+                individuals[indexes[i]].strategy = y_i.strategy;   
+        }
     }
+    /*
+    for (auto it = imit_index_and_strat.begin(); it != imit_index_and_strat.end(); it++)
+    {
+        cout << it->first << endl;
+        cout << it->second << endl;
+        individuals[it->first].strategy = it->second;
+    }
+    */
 }
 
 vector<vector<unsigned long long>> Simulation::divide_mutation_imitation()
@@ -187,6 +203,7 @@ vector<double> Simulation::run_generations(unsigned long long run, unsigned long
     for(unsigned long long i = 0; i < generations; i++)
     {
         keep_track = i > 0.2*generations;
+        
 
         groups = divide_mutation_imitation();
 
@@ -194,6 +211,7 @@ vector<double> Simulation::run_generations(unsigned long long run, unsigned long
 
         imitation(groups[1]);
 
+        
         groups.clear();
 
         if (keep_track)

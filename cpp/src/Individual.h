@@ -30,8 +30,6 @@ class Individual
 
     private:
         mt19937 mt;
-        float sum(vector<float> const& vec);
-        float average(vector<float> const& vec);
         void generate_reputation();
 };
 

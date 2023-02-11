@@ -1,6 +1,9 @@
 build:
 	g++ -O2 src/Individual.cpp src/Simulation.cpp main.cpp -o simulation -std=c++17
 
+build_p:
+	g++-12 -O2 src/Individual.cpp src/Simulation.cpp main.cpp -o simulation -fopenmp -std=c++17
+
 clear:
 	@echo "Cleaning..."
 	rm -f simulation

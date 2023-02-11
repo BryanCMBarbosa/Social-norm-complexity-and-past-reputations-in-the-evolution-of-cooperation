@@ -6,12 +6,16 @@
 #include <string>
 #include <bitset>
 #include <random>
+#include <omp.h>
+#include <map>
 #include <ctime> 
 #include <math.h>
 #include <fstream>
 #include "Individual.h"
 
 using namespace std;
+
+#define strategy_length 8
 
 class Simulation
 {
