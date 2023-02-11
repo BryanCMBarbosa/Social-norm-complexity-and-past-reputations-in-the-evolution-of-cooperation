@@ -7,6 +7,14 @@
 
 using namespace std;
 
+void rev(string &value)
+{
+    string aux;
+    for(int i = value.length() - 1; i >= 0; i--)
+      	aux += (value[i]);
+    value = aux;
+}
+
 int main(int argc, char** argv)
 {
     auto t1 = chrono::high_resolution_clock::now();
@@ -14,7 +22,7 @@ int main(int argc, char** argv)
     if (argc == 6)
     {
         string argv_1(argv[1]);
-        reverse(argv_1.begin(), argv_1.end());
+        rev(argv_1);
         bitset<16> norm(argv_1);
 
         string norm_name(argv[2]);
@@ -34,7 +42,7 @@ int main(int argc, char** argv)
     else if (argc > 6)
     {
         string argv_1(argv[1]);
-        reverse(argv_1.begin(), argv_1.end());
+        rev(argv_1);
         bitset<16> norm(argv_1);
         
         string norm_name(argv[2]);
